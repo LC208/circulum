@@ -26,13 +26,13 @@ public class Subject  implements java.io.Serializable {
      private int id;
      private Teacher teacher;
      private String subName;
-     private Set studyPrograms = new HashSet(0);
-     private Set studyPlans = new HashSet(0);
+     private Set<StudyProgram>  studyPrograms = new HashSet<>(0);
+     private Set<StudyPlan>  studyPlans = new HashSet<>(0);
 
     public Subject() {
     }
 
-    public Subject(int id, Teacher teacher, String subName, Set studyPrograms, Set studyPlans) {
+    public Subject(int id, Teacher teacher, String subName, Set<StudyProgram> studyPrograms, Set<StudyPlan>  studyPlans) {
        this.id = id;
        this.teacher = teacher;
        this.subName = subName;
@@ -73,20 +73,20 @@ public class Subject  implements java.io.Serializable {
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="subject")
-    public Set getStudyPrograms() {
+    public Set<StudyProgram> getStudyPrograms() {
         return this.studyPrograms;
     }
     
-    public void setStudyPrograms(Set studyPrograms) {
+    public void setStudyPrograms(Set<StudyProgram> studyPrograms) {
         this.studyPrograms = studyPrograms;
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="subject")
-    public Set getStudyPlans() {
+    public Set<StudyPlan> getStudyPlans() {
         return this.studyPlans;
     }
     
-    public void setStudyPlans(Set studyPlans) {
+    public void setStudyPlans(Set<StudyPlan>  studyPlans) {
         this.studyPlans = studyPlans;
     }
 

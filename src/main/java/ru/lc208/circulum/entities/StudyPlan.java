@@ -29,12 +29,12 @@ public class StudyPlan  implements java.io.Serializable {
      private Speciality speciality;
      private Department department;
      private int hours;
-     private Set workTypes = new HashSet(0);
+     private Set<WorkType> workTypes = new HashSet<>(0);
 
     public StudyPlan() {
     }
 
-    public StudyPlan(int id, Subject subject, Speciality speciality, Department department, int hours, Set workTypes) {
+    public StudyPlan(int id, Subject subject, Speciality speciality, Department department, int hours, Set<WorkType> workTypes) {
        this.id = id;
        this.subject = subject;
        this.speciality = speciality;
@@ -99,11 +99,11 @@ public class StudyPlan  implements java.io.Serializable {
     @JoinTable(name="plan_wtype", schema="public", joinColumns = { 
         @JoinColumn(name="plan_id", nullable=false, updatable=false) }, inverseJoinColumns = { 
         @JoinColumn(name="wtype_id", nullable=false, updatable=false) })
-    public Set getWorkTypes() {
+    public Set<WorkType> getWorkTypes() {
         return this.workTypes;
     }
     
-    public void setWorkTypes(Set workTypes) {
+    public void setWorkTypes(Set<WorkType> workTypes) {
         this.workTypes = workTypes;
     }
 

@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import ru.lc208.circulum.entities.Competition;
 
 public class CompetitionController {
 

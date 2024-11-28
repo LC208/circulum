@@ -26,13 +26,13 @@ public class Theme  implements java.io.Serializable {
 
      private int id;
      private String name;
-     private Set sections = new HashSet(0);
-     private Set studyPrograms = new HashSet(0);
+     private Set<Section> sections = new HashSet<>(0);
+     private Set<StudyProgram> studyPrograms = new HashSet<>(0);
 
     public Theme() {
     }
 
-    public Theme(int id, String name, Set sections, Set studyPrograms) {
+    public Theme(int id, String name, Set<Section> sections, Set<StudyProgram> studyPrograms) {
        this.id = id;
        this.name = name;
        this.sections = sections;
@@ -62,11 +62,11 @@ public class Theme  implements java.io.Serializable {
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="theme")
-    public Set getSections() {
+    public Set<Section> getSections() {
         return this.sections;
     }
     
-    public void setSections(Set sections) {
+    public void setSections(Set<Section> sections) {
         this.sections = sections;
     }
 
@@ -74,11 +74,11 @@ public class Theme  implements java.io.Serializable {
     @JoinTable(name="program_theme", schema="public", joinColumns = { 
         @JoinColumn(name="theme_id", nullable=false, updatable=false) }, inverseJoinColumns = { 
         @JoinColumn(name="program_id", nullable=false, updatable=false) })
-    public Set getStudyPrograms() {
+    public Set<StudyProgram> getStudyPrograms() {
         return this.studyPrograms;
     }
     
-    public void setStudyPrograms(Set studyPrograms) {
+    public void setStudyPrograms(Set<StudyProgram> studyPrograms) {
         this.studyPrograms = studyPrograms;
     }
 

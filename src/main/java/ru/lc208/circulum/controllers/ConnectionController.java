@@ -10,6 +10,8 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
+import static ru.lc208.circulum.util.WindowTools.showAlert;
+
 
 public class ConnectionController {
     @FXML private TextField hostField;
@@ -61,17 +63,11 @@ public class ConnectionController {
             newStage.show();
 
         } catch (Exception e) {
-            showAlert("Connection Failed", "Error: " + e.getMessage(), Alert.AlertType.ERROR);
+            showAlert("Something Went Wrong", "Error: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
-    private void showAlert(String title, String message, Alert.AlertType type) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
+
 
     public SessionFactory getSessionFactory() {
         return sessionFactory;

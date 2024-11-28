@@ -11,6 +11,7 @@
         <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</property>
         <property name="hibernate.show_sql">true</property>
         <property name="hibernate.hbm2ddl.auto">validate</property>
+        <property name="hibernate.archive.autodetection">class</property>
 
 
         <!-- Enable Hibernate's automatic session context management -->
@@ -21,6 +22,21 @@
         <property name="hibernate.format_sql">true</property>
         <!-- Укажите аннотированные классы -->
         <mapping class="ru.lc208.circulum.entities.Competition"/>
+        <mapping class="ru.lc208.circulum.entities.Department"/>
+        <mapping class="ru.lc208.circulum.entities.Direction"/>
+        <mapping class="ru.lc208.circulum.entities.Faculty"/>
+        <mapping class="ru.lc208.circulum.entities.Gear"/>
+        <mapping class="ru.lc208.circulum.entities.Section"/>
+        <mapping class="ru.lc208.circulum.entities.Speciality"/>
+        <mapping class="ru.lc208.circulum.entities.StudyPlan"/>
+        <mapping class="ru.lc208.circulum.entities.StudyProgram"/>
+<!--        <mapping class="ru.lc208.circulum.entities.StudyProgramView"/>-->
+<!--        <mapping class="ru.lc208.circulum.entities.StudyProgramViewId"/>-->
+        <mapping class="ru.lc208.circulum.entities.Subject"/>
+        <mapping class="ru.lc208.circulum.entities.Teacher"/>
+        <mapping class="ru.lc208.circulum.entities.Theme"/>
+<!--        <mapping class="ru.lc208.circulum.entities.UserTeacherMapping"/>-->
+        <mapping class="ru.lc208.circulum.entities.WorkType"/>
     </session-factory>
 </hibernate-configuration>
 

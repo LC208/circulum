@@ -30,14 +30,14 @@ public class StudyProgram  implements java.io.Serializable {
      private String tasksTargets;
      private String requirments;
      private String discPlace;
-     private Set gears = new HashSet(0);
-     private Set competitions = new HashSet(0);
-     private Set themes = new HashSet(0);
+     private Set<Gear> gears = new HashSet<>(0);
+     private Set<Competition> competitions = new HashSet<>(0);
+     private Set<Theme> themes = new HashSet<>(0);
 
     public StudyProgram() {
     }
 
-    public StudyProgram(int id, Subject subject, Speciality speciality, String tasksTargets, String requirments, String discPlace, Set gears, Set competitions, Set themes) {
+    public StudyProgram(int id, Subject subject, Speciality speciality, String tasksTargets, String requirments, String discPlace, Set<Gear> gears, Set<Competition> competitions, Set<Theme> themes) {
        this.id = id;
        this.subject = subject;
        this.speciality = speciality;
@@ -115,23 +115,23 @@ public class StudyProgram  implements java.io.Serializable {
     @JoinTable(name="program_gear", schema="public", joinColumns = { 
         @JoinColumn(name="program_id", nullable=false, updatable=false) }, inverseJoinColumns = { 
         @JoinColumn(name="gear_id", nullable=false, updatable=false) })
-    public Set getGears() {
+    public Set<Gear> getGears() {
         return this.gears;
     }
     
-    public void setGears(Set gears) {
+    public void setGears(Set<Gear> gears) {
         this.gears = gears;
     }
 
 @ManyToMany(fetch=FetchType.LAZY)
-    @JoinTable(name="program_competition", schema="public", joinColumns = { 
+    @JoinTable(name="program_competition", schema="public", joinColumns = {
         @JoinColumn(name="program_id", nullable=false, updatable=false) }, inverseJoinColumns = { 
         @JoinColumn(name="competition_id", nullable=false, updatable=false) })
-    public Set getCompetitions() {
+    public Set<Competition> getCompetitions() {
         return this.competitions;
     }
     
-    public void setCompetitions(Set competitions) {
+    public void setCompetitions(Set<Competition> competitions) {
         this.competitions = competitions;
     }
 
@@ -139,11 +139,11 @@ public class StudyProgram  implements java.io.Serializable {
     @JoinTable(name="program_theme", schema="public", joinColumns = { 
         @JoinColumn(name="program_id", nullable=false, updatable=false) }, inverseJoinColumns = { 
         @JoinColumn(name="theme_id", nullable=false, updatable=false) })
-    public Set getThemes() {
+    public Set<Theme> getThemes() {
         return this.themes;
     }
     
-    public void setThemes(Set themes) {
+    public void setThemes(Set<Theme> themes) {
         this.themes = themes;
     }
 

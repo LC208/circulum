@@ -27,13 +27,13 @@ public class Department  implements java.io.Serializable {
      private Faculty faculty;
      private String depName;
      private int deanId;
-     private Set teachers = new HashSet(0);
-     private Set studyPlans = new HashSet(0);
+     private Set<Teacher> teachers = new HashSet<>(0);
+     private Set<StudyPlan> studyPlans = new HashSet<>(0);
 
     public Department() {
     }
 
-    public Department(int id, Faculty faculty, String depName, int deanId, Set teachers, Set studyPlans) {
+    public Department(int id, Faculty faculty, String depName, int deanId, Set<Teacher> teachers, Set<StudyPlan>  studyPlans) {
        this.id = id;
        this.faculty = faculty;
        this.depName = depName;
@@ -85,20 +85,20 @@ public class Department  implements java.io.Serializable {
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="department")
-    public Set getTeachers() {
+    public Set<Teacher> getTeachers() {
         return this.teachers;
     }
     
-    public void setTeachers(Set teachers) {
+    public void setTeachers(Set<Teacher> teachers) {
         this.teachers = teachers;
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="department")
-    public Set getStudyPlans() {
+    public Set<StudyPlan>  getStudyPlans() {
         return this.studyPlans;
     }
     
-    public void setStudyPlans(Set studyPlans) {
+    public void setStudyPlans(Set<StudyPlan>  studyPlans) {
         this.studyPlans = studyPlans;
     }
 

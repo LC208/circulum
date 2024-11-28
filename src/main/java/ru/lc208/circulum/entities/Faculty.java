@@ -23,13 +23,13 @@ public class Faculty  implements java.io.Serializable {
 
      private int id;
      private String name;
-     private Set departments = new HashSet(0);
-     private Set specialities = new HashSet(0);
+     private Set<Department> departments = new HashSet<>(0);
+     private Set<Speciality> specialities = new HashSet<>(0);
 
     public Faculty() {
     }
 
-    public Faculty(int id, String name, Set departments, Set specialities) {
+    public Faculty(int id, String name, Set<Department> departments, Set<Speciality> specialities) {
        this.id = id;
        this.name = name;
        this.departments = departments;
@@ -59,20 +59,20 @@ public class Faculty  implements java.io.Serializable {
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="faculty")
-    public Set getDepartments() {
+    public Set<Department> getDepartments() {
         return this.departments;
     }
     
-    public void setDepartments(Set departments) {
+    public void setDepartments(Set<Department> departments) {
         this.departments = departments;
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="faculty")
-    public Set getSpecialities() {
+    public Set<Speciality> getSpecialities() {
         return this.specialities;
     }
     
-    public void setSpecialities(Set specialities) {
+    public void setSpecialities(Set<Speciality> specialities) {
         this.specialities = specialities;
     }
 

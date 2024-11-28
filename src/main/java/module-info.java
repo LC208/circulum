@@ -11,4 +11,5 @@ module ru.lc208.circulum {
     opens ru.lc208.circulum.entities to org.hibernate.orm.core;
     exports ru.lc208.circulum.controllers to javafx.fxml;
     exports ru.lc208.circulum;
+    exports ru.lc208.circulum.entities;
 }

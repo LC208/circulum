@@ -25,12 +25,12 @@ public class Teacher  implements java.io.Serializable {
 
      private int id;
      private Department department;
-     private Set subjects = new HashSet(0);
+     private Set<Subject> subjects = new HashSet<>(0);
 
     public Teacher() {
     }
 
-    public Teacher(int id, Department department, Set subjects) {
+    public Teacher(int id, Department department, Set<Subject> subjects) {
        this.id = id;
        this.department = department;
        this.subjects = subjects;
@@ -59,11 +59,11 @@ public class Teacher  implements java.io.Serializable {
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="teacher")
-    public Set getSubjects() {
+    public Set<Subject> getSubjects() {
         return this.subjects;
     }
     
-    public void setSubjects(Set subjects) {
+    public void setSubjects(Set<Subject> subjects) {
         this.subjects = subjects;
     }
 

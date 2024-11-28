@@ -26,12 +26,12 @@ public class Competition  implements java.io.Serializable {
      private int id;
      private String description;
      private String name;
-     private Set studyPrograms = new HashSet(0);
+     private Set<StudyProgram> studyPrograms = new HashSet<>(0);
 
     public Competition() {
     }
 
-    public Competition(int id, String description, String name, Set studyPrograms) {
+    public Competition(int id, String description, String name, Set<StudyProgram> studyPrograms) {
        this.id = id;
        this.description = description;
        this.name = name;
@@ -40,7 +40,7 @@ public class Competition  implements java.io.Serializable {
    
      @Id 
 
-    
+
     @Column(name="id", unique=true, nullable=false)
     public int getId() {
         return this.id;
@@ -74,11 +74,11 @@ public class Competition  implements java.io.Serializable {
     @JoinTable(name="program_competition", schema="public", joinColumns = { 
         @JoinColumn(name="competition_id", nullable=false, updatable=false) }, inverseJoinColumns = { 
         @JoinColumn(name="program_id", nullable=false, updatable=false) })
-    public Set getStudyPrograms() {
+    public Set<StudyProgram> getStudyPrograms() {
         return this.studyPrograms;
     }
     
-    public void setStudyPrograms(Set studyPrograms) {
+    public void setStudyPrograms(Set<StudyProgram> studyPrograms) {
         this.studyPrograms = studyPrograms;
     }
 

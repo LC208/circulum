@@ -27,13 +27,13 @@ public class Speciality  implements java.io.Serializable {
      private Faculty faculty;
      private Direction direction;
      private String specName;
-     private Set studyPlans = new HashSet(0);
-     private Set studyPrograms = new HashSet(0);
+     private Set<StudyPlan> studyPlans = new HashSet<>(0);
+     private Set<StudyProgram> studyPrograms = new HashSet<>(0);
 
     public Speciality() {
     }
 
-    public Speciality(int id, Faculty faculty, Direction direction, String specName, Set studyPlans, Set studyPrograms) {
+    public Speciality(int id, Faculty faculty, Direction direction, String specName, Set<StudyPlan> studyPlans, Set<StudyProgram> studyPrograms) {
        this.id = id;
        this.faculty = faculty;
        this.direction = direction;
@@ -85,20 +85,20 @@ public class Speciality  implements java.io.Serializable {
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="speciality")
-    public Set getStudyPlans() {
+    public Set<StudyPlan> getStudyPlans() {
         return this.studyPlans;
     }
     
-    public void setStudyPlans(Set studyPlans) {
+    public void setStudyPlans(Set<StudyPlan> studyPlans) {
         this.studyPlans = studyPlans;
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="speciality")
-    public Set getStudyPrograms() {
+    public Set<StudyProgram> getStudyPrograms() {
         return this.studyPrograms;
     }
     
-    public void setStudyPrograms(Set studyPrograms) {
+    public void setStudyPrograms(Set<StudyProgram> studyPrograms) {
         this.studyPrograms = studyPrograms;
     }
 

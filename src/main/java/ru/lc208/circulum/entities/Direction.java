@@ -23,12 +23,12 @@ public class Direction  implements java.io.Serializable {
 
      private int id;
      private String dirName;
-     private Set specialities = new HashSet(0);
+     private Set<Speciality> specialities = new HashSet<>(0);
 
     public Direction() {
     }
 
-    public Direction(int id, String dirName, Set specialities) {
+    public Direction(int id, String dirName, Set<Speciality> specialities) {
        this.id = id;
        this.dirName = dirName;
        this.specialities = specialities;
@@ -57,11 +57,11 @@ public class Direction  implements java.io.Serializable {
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="direction")
-    public Set getSpecialities() {
+    public Set<Speciality> getSpecialities() {
         return this.specialities;
     }
     
-    public void setSpecialities(Set specialities) {
+    public void setSpecialities(Set<Speciality> specialities) {
         this.specialities = specialities;
     }
 
