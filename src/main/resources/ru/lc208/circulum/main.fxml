@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.Scene?>
+<?import javafx.stage.Stage?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="ru.lc208.circulum.controllers.MainController">
+    <!-- Панель кнопок -->
+    <VBox layoutX="20" layoutY="20" spacing="10">
+        <Button fx:id="showSpecialityButton" text="Показать Специальности" onAction="#showSpecialityTable"/>
+        <Button fx:id="showDirectionButton" text="Показать Направления" onAction="#showDirectionTable"/>
+        <Button fx:id="showStudyProgramButton" text="Показать Программы обучения" onAction="#showStudyProgramTable"/>
+        <Button fx:id="showStudyPlanButton" text="Показать Планы обучения" onAction="#showStudyPlanTable"/>
+        <Button fx:id="showSubjectButton" text="Показать Предметы" onAction="#showSubjectTable"/>
+    </VBox>
+</AnchorPane>

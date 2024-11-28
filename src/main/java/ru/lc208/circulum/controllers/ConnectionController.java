@@ -2,7 +2,6 @@ package ru.lc208.circulum.controllers;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -56,10 +55,10 @@ public class ConnectionController {
             Stage currentStage = (Stage) hostField.getScene().getWindow();
             currentStage.close();
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ru/lc208/circulum/competition.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ru/lc208/circulum/main.fxml"));
             Stage newStage = new Stage();
             newStage.setScene(new Scene(loader.load()));
-            newStage.setTitle("New Window");
+            newStage.setTitle("Main Window");
             newStage.show();
 
         } catch (Exception e) {
