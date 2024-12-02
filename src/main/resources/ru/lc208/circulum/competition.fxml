@@ -4,5 +4,5 @@
 <VBox xmlns:fx="http://javafx.com/fxml" fx:controller="ru.lc208.circulum.controllers.CompetitionController" spacing="10" alignment="CENTER" style="-fx-padding: 20;">
     <TextField fx:id="nameField" promptText="Название компетенции" prefWidth="300"/>
     <TextField fx:id="descriptionField" promptText="Описание компетенции" prefWidth="300"/>
-    <Button text="Добавить" fx:id="addButton" onAction="#addCompetition" prefWidth="100"/>
+    <Button text="Добавить" fx:id="addButton" onAction="#add" prefWidth="100"/>
 </VBox>

@@ -38,9 +38,7 @@ public class Competition  implements java.io.Serializable {
        this.studyPrograms = studyPrograms;
     }
    
-     @Id 
-
-
+    @Id
     @Column(name="id", unique=true, nullable=false)
     public int getId() {
         return this.id;

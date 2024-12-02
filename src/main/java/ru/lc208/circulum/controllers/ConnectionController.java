@@ -55,7 +55,7 @@ public class ConnectionController {
             Stage currentStage = (Stage) hostField.getScene().getWindow();
             currentStage.close();
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ru/lc208/circulum/main.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ru/lc208/circulum/competition.fxml"));
             Stage newStage = new Stage();
             newStage.setScene(new Scene(loader.load()));
             newStage.setTitle("Main Window");
