@@ -2,15 +2,8 @@ package ru.lc208.circulum.entities;// default package
 // Generated 28 нояб. 2024 г., 21:40:16 by Hibernate Tools 6.2.8.Final
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -48,11 +41,11 @@ public class StudyProgram  implements java.io.Serializable {
        this.competitions = competitions;
        this.themes = themes;
     }
-   
-     @Id 
 
-    
+    @Id
     @Column(name="id", unique=true, nullable=false)
+    @SequenceGenerator(name = "study_program", sequenceName = "study_program_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "study_program")
     public int getId() {
         return this.id;
     }
@@ -123,10 +116,10 @@ public class StudyProgram  implements java.io.Serializable {
         this.gears = gears;
     }
 
-@ManyToMany(fetch=FetchType.LAZY)
-    @JoinTable(name="program_competition", schema="public", joinColumns = {
-        @JoinColumn(name="program_id", nullable=false, updatable=false) }, inverseJoinColumns = { 
-        @JoinColumn(name="competition_id", nullable=false, updatable=false) })
+@ManyToMany(fetch=FetchType.LAZY, mappedBy = "studyPrograms")
+//    @JoinTable(name="program_competition", schema="public", joinColumns = {
+//        @JoinColumn(name="program_id", nullable=false, updatable=false) }, inverseJoinColumns = {
+//        @JoinColumn(name="competition_id", nullable=false, updatable=false) })
     public Set<Competition> getCompetitions() {
         return this.competitions;
     }
@@ -148,8 +141,10 @@ public class StudyProgram  implements java.io.Serializable {
     }
 
 
-
-
+    @Override
+    public String toString() {
+        return speciality + " - " + subject;
+    }
 }
 
 

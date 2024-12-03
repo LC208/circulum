@@ -28,9 +28,7 @@ public class UserTeacherMapping  implements java.io.Serializable {
        this.teacherId = teacherId;
     }
    
-     @Id 
-
-    
+    @Id
     @Column(name="user_name", unique=true, nullable=false)
     public String getUserName() {
         return this.userName;
@@ -40,8 +38,8 @@ public class UserTeacherMapping  implements java.io.Serializable {
         this.userName = userName;
     }
 
-    
-    @Column(name="teacher_id", nullable=false)
+    @Id
+    @Column(name="teacher_id",unique = true ,nullable=false)
     public int getTeacherId() {
         return this.teacherId;
     }

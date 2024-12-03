@@ -2,14 +2,8 @@ package ru.lc208.circulum.entities;// default package
 // Generated 28 нояб. 2024 г., 21:40:16 by Hibernate Tools 6.2.8.Final
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,11 +35,11 @@ public class Speciality  implements java.io.Serializable {
        this.studyPlans = studyPlans;
        this.studyPrograms = studyPrograms;
     }
-   
-     @Id 
 
-    
+    @Id
     @Column(name="id", unique=true, nullable=false)
+    @SequenceGenerator(name = "speciality", sequenceName = "speciality_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "speciality")
     public int getId() {
         return this.id;
     }
@@ -102,7 +96,10 @@ public class Speciality  implements java.io.Serializable {
         this.studyPrograms = studyPrograms;
     }
 
-
+    @Override
+    public String toString() {
+        return specName; // Показывать название департамента в ComboBox
+    }
 
 
 }

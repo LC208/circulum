@@ -2,14 +2,8 @@ package ru.lc208.circulum.entities;// default package
 // Generated 28 нояб. 2024 г., 21:40:16 by Hibernate Tools 6.2.8.Final
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,11 +29,11 @@ public class Teacher  implements java.io.Serializable {
        this.department = department;
        this.subjects = subjects;
     }
-   
-     @Id 
 
-    
+    @Id
     @Column(name="id", unique=true, nullable=false)
+    @SequenceGenerator(name = "teacher", sequenceName = "teacher_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "teacher")
     public int getId() {
         return this.id;
     }
@@ -66,8 +60,6 @@ public class Teacher  implements java.io.Serializable {
     public void setSubjects(Set<Subject> subjects) {
         this.subjects = subjects;
     }
-
-
 
 
 }

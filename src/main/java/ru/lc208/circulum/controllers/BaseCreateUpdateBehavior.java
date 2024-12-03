@@ -7,50 +7,40 @@ import org.hibernate.Transaction;
 import ru.lc208.circulum.entities.Competition;
 import ru.lc208.circulum.util.WindowTools;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-public class BaseCRUDBehavior implements CRUD{
+public class BaseCreateUpdateBehavior implements CreateUpdate{
 
-    Map<String, TextField> fieldMap = new HashMap<>();
+    Map<String, Object> fieldMap = new HashMap<>();
     Session session;
     EntityFieldUpdater updater = new EntityFieldUpdaterImpl();
-    Object entity;
 
-    public BaseCRUDBehavior(Session session, Object entity)
+    public BaseCreateUpdateBehavior(Session session)
     {
         this.session = session;
-        this.entity = entity;
     }
 
 
-    public void setTextField(String fieldName, TextField field)
+    public void setField(String fieldName, Object field)
     {
         fieldMap.put(fieldName, field);
     }
 
-    @Override
-    public void get() {
-
-    }
 
     @Override
-    public void add() {
-        if (fieldMap.values().stream().allMatch(value -> value.getText().isEmpty())) {
+    public void add(Object entity) {
+        if (fieldMap.values().stream().allMatch(Objects::nonNull)) {
             System.out.println("Ошибка: Все поля должны быть заполнены");
             return;
         }
-
-        Transaction transaction = null;
+        Transaction transaction;
 
         try {
             transaction = session.beginTransaction();
 
             fieldMap.forEach((key, value) -> {
                 try {
-                    updater.setFieldValue(entity, key, value.getText());
+                    updater.setFieldValue(entity, key, value);
                 } catch (NoSuchFieldException e) {
                     WindowTools.showAlert("ERROR","Ошибка при добавлении объекта 1", Alert.AlertType.ERROR);
 
@@ -58,25 +48,17 @@ public class BaseCRUDBehavior implements CRUD{
                     WindowTools.showAlert("ERROR","Ошибка при добавлении объекта 2", Alert.AlertType.ERROR);
                 }
             });
-            session.save(entity);
+            session.persist(entity);
             transaction.commit();
             System.out.println("Объект добавлен");
         } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            e.printStackTrace();
-            WindowTools.showAlert("ERROR","Ошибка при добавлении объекта", Alert.AlertType.ERROR);
+            WindowTools.showAlert("ERROR",e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
     @Override
-    public void update() {
+    public void update(Object entity) {
 
     }
 
-    @Override
-    public void delete() {
-
-    }
 }

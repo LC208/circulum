@@ -8,31 +8,34 @@ import javafx.stage.Stage;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import ru.lc208.circulum.gui.MainScene;
 
 import static ru.lc208.circulum.util.WindowTools.showAlert;
 
 
 public class ConnectionController {
-    @FXML private TextField hostField;
-    @FXML private TextField portField;
-    @FXML private TextField dbNameField;
+//    @FXML private TextField hostField;
+//    @FXML private TextField portField;
+//    @FXML private TextField dbNameField;
     @FXML private TextField usernameField;
     @FXML
     private PasswordField passwordField;
 
-    private SessionFactory sessionFactory;
-    private static Session session;
+    private static SessionFactory sessionFactory;
 
-    public static Session getSession()
+    public static SessionFactory getSessionFactory()
     {
-        return session;
+        return sessionFactory;
     }
 
     @FXML
     public void onConnect() {
-        String host = hostField.getText();
-        String port = portField.getText();
-        String dbName = dbNameField.getText();
+//        String host = hostField.getText();
+//        String port = portField.getText();
+//        String dbName = dbNameField.getText();
+        String host = "127.0.0.1";
+        String port = "5432";
+        String dbName = "postgres";
         String username = usernameField.getText();
         String password = passwordField.getText();
 
@@ -50,17 +53,10 @@ public class ConnectionController {
                     .setProperty("hibernate.connection.password", password)
                     .buildSessionFactory();
 
-            session = sessionFactory.openSession();
             showAlert("Success", "Connection successful!", Alert.AlertType.INFORMATION);
-            Stage currentStage = (Stage) hostField.getScene().getWindow();
-            currentStage.close();
-
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ru/lc208/circulum/competition.fxml"));
-            Stage newStage = new Stage();
-            newStage.setScene(new Scene(loader.load()));
-            newStage.setTitle("Main Window");
-            newStage.show();
-
+            Stage currentStage = (Stage) usernameField.getScene().getWindow();
+            MainScene main = new MainScene();
+            main.show(currentStage);
         } catch (Exception e) {
             showAlert("Something Went Wrong", "Error: " + e.getMessage(), Alert.AlertType.ERROR);
         }
@@ -68,14 +64,7 @@ public class ConnectionController {
 
 
 
-    public SessionFactory getSessionFactory() {
-        return sessionFactory;
-    }
-
     public void closeResources() {
-        if (session != null) {
-            session.close();
-        }
         if (sessionFactory != null) {
             sessionFactory.close();
         }

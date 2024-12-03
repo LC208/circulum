@@ -2,15 +2,8 @@ package ru.lc208.circulum.entities;// default package
 // Generated 28 нояб. 2024 г., 21:40:16 by Hibernate Tools 6.2.8.Final
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,11 +35,11 @@ public class StudyPlan  implements java.io.Serializable {
        this.hours = hours;
        this.workTypes = workTypes;
     }
-   
-     @Id 
 
-    
+    @Id
     @Column(name="id", unique=true, nullable=false)
+    @SequenceGenerator(name = "study_plan", sequenceName = "study_plan_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "study_plan")
     public int getId() {
         return this.id;
     }

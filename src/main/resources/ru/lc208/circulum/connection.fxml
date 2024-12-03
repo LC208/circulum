@@ -2,9 +2,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <VBox xmlns:fx="http://javafx.com/fxml" fx:controller="ru.lc208.circulum.controllers.ConnectionController" spacing="10" alignment="CENTER" style="-fx-padding: 20;">
-    <TextField fx:id="hostField" promptText="Host (например: localhost)"/>
-    <TextField fx:id="portField" promptText="Port (например: 5432)"/>
-    <TextField fx:id="dbNameField" promptText="Database Name"/>
+<!--    <TextField fx:id="hostField" promptText="Host (например: localhost)"/>-->
+<!--    <TextField fx:id="portField" promptText="Port (например: 5432)"/>-->
+<!--    <TextField fx:id="dbNameField" promptText="Database Name"/>-->
     <TextField fx:id="usernameField" promptText="Username"/>
     <PasswordField fx:id="passwordField" promptText="Password"/>
     <Button text="Connect" onAction="#onConnect" />

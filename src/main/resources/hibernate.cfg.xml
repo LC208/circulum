@@ -12,7 +12,10 @@
         <property name="hibernate.show_sql">true</property>
         <property name="hibernate.hbm2ddl.auto">validate</property>
         <property name="hibernate.archive.autodetection">class</property>
-
+<!--        <property name="hibernate.jdbc.batch_size">20</property>-->
+<!--        <property name="hibernate.order_inserts">true</property>-->
+<!--        <property name="hibernate.order_updates">true</property>-->
+<!--        <property name="logging.level.org.hibernate">DEBUG</property>-->
 
         <!-- Enable Hibernate's automatic session context management -->
         <property name="hibernate.current_session_context_class">thread</property>

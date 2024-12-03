@@ -2,14 +2,10 @@ package ru.lc208.circulum.entities;// default package
 // Generated 28 нояб. 2024 г., 21:40:16 by Hibernate Tools 6.2.8.Final
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.Filters;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,7 +23,17 @@ public class Competition  implements java.io.Serializable {
      private String description;
      private String name;
      private Set<StudyProgram> studyPrograms = new HashSet<>(0);
+//    private int version;
+//
+//    @Version
+//    @Column(name="version")
+//    public int getVersion() {
+//        return version;
+//    }
 
+//    public void setVersion(int version) {
+//        this.version = version;
+//    }
     public Competition() {
     }
 
@@ -40,10 +46,13 @@ public class Competition  implements java.io.Serializable {
    
     @Id
     @Column(name="id", unique=true, nullable=false)
+    @SequenceGenerator(name = "competition", sequenceName = "competition_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "competition")
     public int getId() {
         return this.id;
     }
-    
+
+
     public void setId(int id) {
         this.id = id;
     }
@@ -69,8 +78,8 @@ public class Competition  implements java.io.Serializable {
     }
 
 @ManyToMany(fetch=FetchType.LAZY)
-    @JoinTable(name="program_competition", schema="public", joinColumns = { 
-        @JoinColumn(name="competition_id", nullable=false, updatable=false) }, inverseJoinColumns = { 
+    @JoinTable(name="program_competition", schema="public", joinColumns = {
+        @JoinColumn(name="competition_id", nullable=false, updatable=false) }, inverseJoinColumns = {
         @JoinColumn(name="program_id", nullable=false, updatable=false) })
     public Set<StudyProgram> getStudyPrograms() {
         return this.studyPrograms;
@@ -80,7 +89,10 @@ public class Competition  implements java.io.Serializable {
         this.studyPrograms = studyPrograms;
     }
 
-
+    @Override
+    public String toString() {
+        return name; // Показывать название департамента в ComboBox
+    }
 
 
 }
