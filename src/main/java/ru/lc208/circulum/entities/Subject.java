@@ -16,7 +16,13 @@ import java.util.Set;
 )
 public class Subject  implements java.io.Serializable {
 
-
+    public boolean equals(Object obj) {
+        if(obj instanceof Subject)
+        {
+            return this.id == ((Subject)obj).id;
+        }
+        return false;
+    }
      private int id;
      private Teacher teacher;
      private String subName;

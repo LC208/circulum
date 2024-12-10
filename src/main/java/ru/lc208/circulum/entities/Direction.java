@@ -16,6 +16,13 @@ import java.util.Set;
 )
 public class Direction  implements java.io.Serializable {
 
+    public boolean equals(Object obj) {
+        if(obj instanceof Direction)
+        {
+            return this.id == ((Direction)obj).id;
+        }
+        return false;
+    }
 
      private int id;
      private String dirName;

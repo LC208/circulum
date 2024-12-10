@@ -16,7 +16,13 @@ import java.util.Set;
 )
 public class WorkType  implements java.io.Serializable {
 
-
+    public boolean equals(Object obj) {
+        if(obj instanceof WorkType)
+        {
+            return this.id == ((WorkType)obj).id;
+        }
+        return false;
+    }
      private int id;
      private String workType;
      private int hours;

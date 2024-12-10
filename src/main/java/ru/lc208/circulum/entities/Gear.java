@@ -16,6 +16,13 @@ import java.util.Set;
 )
 public class Gear  implements java.io.Serializable {
 
+    public boolean equals(Object obj) {
+        if(obj instanceof Gear)
+        {
+            return this.id == ((Gear)obj).id;
+        }
+        return false;
+    }
 
      private int id;
      private String type;

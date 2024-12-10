@@ -12,74 +12,84 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import org.hibernate.Hibernate;
-import org.hibernate.LockMode;
 import org.hibernate.Session;
-import org.hibernate.proxy.HibernateProxy;
-import org.hibernate.stat.SessionStatistics;
 import ru.lc208.circulum.controllers.ConnectionController;
-import ru.lc208.circulum.controllers.CreateUpdate;
-import ru.lc208.circulum.entities.Competition;
-import ru.lc208.circulum.entities.StudyProgram;
+import ru.lc208.circulum.entities.*;
+import ru.lc208.circulum.util.TranslationHelper;
 import ru.lc208.circulum.util.WindowTools;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MainScene{
 
-    private final Class<?>[] entityClasses = {StudyProgram.class, Competition.class};
+    private final Class<?>[] entityClasses = {Competition.class, Department.class, Direction.class, Faculty.class, Gear.class, Section.class, Speciality.class, StudyPlan.class, StudyProgram.class, Subject.class, Teacher.class, Theme.class, WorkType.class};
 
-    private final String[] tabNames = {"StudyProgram", "Competition"};
+    private static Session session = null;
+    private Stage formStage;
 
-    private Session session;
-    private CreateUpdate behavior;
+    private TabPane tabPane;
+    private Map<Tab, Class> tabMap = new HashMap<>();
+    private Map<Class, TableView> classMap = new HashMap<>();
 
 
     public MainScene()
     {
-        this.session = ConnectionController.getSessionFactory().openSession();
+        session = ConnectionController.getSessionFactory().openSession();
     }
 
     private boolean isBlocked = false;
 
     public void show(Stage currentStage)
     {
+
         TabPane tabPane = new TabPane();
 
         for (int i = 0; i < entityClasses.length; i++) {
-            Tab tab = new Tab(tabNames[i]);  // Имя вкладки из массива tabNames
-            tab.setContent(createTabContent(entityClasses[i]));  // Создаем контент вкладки
-            tab.setClosable(false);
-            tabPane.getTabs().add(tab);
-        }
+            Tab tab = new Tab(entityClasses[i].getSimpleName());
+            tab.setId(entityClasses[i].getSimpleName());// Имя вкладки из массива tabNames
+            VBox tabContent = createTabContent(entityClasses[i]);
 
-        Scene scene = new Scene(tabPane, 800, 600);
+            tab.setContent(tabContent);  // Создаем контент вкладки
+            tab.setClosable(false);
+            tabMap.put(tab, entityClasses[i]);
+            tabPane.getTabs().add(tab);
+            TranslationHelper.applyTranslations(tabContent);
+        }
+        refreshTable(entityClasses[0], classMap.get(entityClasses[0]));
+        tabPane.getSelectionModel().selectedItemProperty().addListener(
+                (_, _, t1) -> refreshTable(tabMap.get(t1), classMap.get(tabMap.get(t1)))
+        );
+        VBox main = new VBox(10, tabPane);
+        TranslationHelper.applyTranslations(main);
+        Scene scene = new Scene(main, 800, 600);
         currentStage.setScene(scene);
         currentStage.setTitle("Main");
         currentStage.show();
     }
 
+
+
     private <T> VBox createTabContent(Class<T> clazz) {
         TableView<T> tableView = createTableView(clazz);
         tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        Button addButton = new Button("Add");
-        Button deleteButton = new Button("Delete");
-        Button editButton = new Button("Edit");
-        Button refreshButton = new Button("Refresh");
+        MenuItem addButton = new MenuItem("Add");
+        MenuItem deleteButton = new MenuItem("Delete");
+        MenuItem editButton = new MenuItem("Edit");
+
+        addButton.setId("add");
+        deleteButton.setId("delete");
+        editButton.setId("edit");
+
+        ContextMenu contextMenu = new ContextMenu(addButton,deleteButton,editButton);
 
         addButton.setOnAction(event -> {
-            if(!isBlocked) showInputForm(clazz, tableView);
+            if(!isBlocked) showInputForm(clazz);
         });
-
-        refreshButton.setOnAction(event -> refreshTable(clazz,tableView));
 
         deleteButton.setOnAction(event -> {
             try {
@@ -99,20 +109,34 @@ public class MainScene{
                     WindowTools.showAlert("Уведомление", "Выберите только одну сущность", Alert.AlertType.INFORMATION);
                     return;
                 }
-                showEditForm(clazz, entityToEdit, tableView);
+                showEditForm(clazz, entityToEdit);
             }
         });
 
-        HBox hbox = new HBox(10, addButton, deleteButton, editButton, refreshButton);
-        hbox.setAlignment(Pos.CENTER);
-        return new VBox(10,tableView , hbox);
+        tableView.setContextMenu(contextMenu);
+        classMap.put(clazz, tableView);
+        return new VBox(10,tableView);
     }
 
 
     private <T> void refreshTable(Class<T> clazz, TableView<T> tableView)
     {
+        session.beginTransaction();
+        session.clear();
+        session.getTransaction().commit();
         ObservableList<T> data = loadData(clazz);
+        tableView.getItems().clear();
         tableView.setItems(data);
+    }
+
+    private static <T> void refreshList(Class<T> clazz, ListView<T> listView)
+    {
+        session.beginTransaction();
+        session.clear();
+        session.getTransaction().commit();
+        ObservableList<T> data = loadData(clazz);
+        listView.getItems().clear();
+        listView.setItems(data);
     }
 
     private static boolean isEntity(Class<?> clazz) {
@@ -130,40 +154,77 @@ public class MainScene{
                 tableView.getColumns().add(column);
             }
         }
-
-        ObservableList<T> data = loadData(clazz);
-        tableView.setItems(data);
+//        ObservableList<T> data = loadData(clazz);
+//        tableView.setItems(data);
 
         return tableView;
     }
 
-    private <T> TableColumn<T, ?> createColumn(java.lang.reflect.Field field) {
-        TableColumn<T, ?> column = new TableColumn<>(field.getName());
+    public static Object getId(Object entity) {
+        if (entity == null) {
+            throw new IllegalArgumentException("Entity cannot be null");
+        }
 
+        Class<?> clazz = entity.getClass();
+        try {
+            // Пытаемся найти поле id
+            Field idField = null;
+            for (Field field : clazz.getDeclaredFields()) {
+                if (field.getName().equalsIgnoreCase("id")) {
+                    idField = field;
+                    break;
+                }
+            }
+
+            if (idField == null) {
+                throw new IllegalStateException("No field named 'id' found in " + clazz.getName());
+            }
+
+            idField.setAccessible(true); // Делаем поле доступным
+            return idField.get(entity);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("Unable to access id field in " + clazz.getName(), e);
+        }
+    }
+
+    private <T> TableColumn<T, ?> createColumn(Field field) {
+        TableColumn<T, ?> column = new TableColumn<>(field.getName());
+        column.setId(field.getName());
         if (field.getType() == Integer.class || field.getType() == int.class) {
             column.setCellValueFactory(cellData -> ((ObservableValue)new SimpleIntegerProperty((Integer) getFieldValue(cellData.getValue(), field)).asObject()));
         } else if (field.getType() == String.class) {
             column.setCellValueFactory(cellData -> ((ObservableValue)new SimpleStringProperty((String) getFieldValue(cellData.getValue(), field))));
-        } else if(isEntity(field.getType())){
-            System.out.println();
-            column.setCellValueFactory(cellData -> {
-                Object fieldValue = getFieldValue(cellData.getValue(), field);
-
-                if (fieldValue instanceof HibernateProxy) {
-                    Hibernate.initialize(fieldValue);
-                }
-                return (ObservableValue)new SimpleStringProperty(Objects.requireNonNull(fieldValue).toString());
-            });
         } else if(field.getType().isAssignableFrom(Set.class))
         {
             column.setCellValueFactory(cellData -> ((ObservableValue)new SimpleStringProperty((String) ((Set)getFieldValue(cellData.getValue(), field)).stream().map(Object::toString).collect(Collectors.joining(", ")))));
+        }else if(isEntity(field.getType())){
+            column.setCellValueFactory(cellData -> {
+                Object fieldValue = getFieldValue(cellData.getValue(), field);
+                return (ObservableValue)new SimpleStringProperty(Objects.requireNonNull(fieldValue).toString());
+            });
         }
 
         return column;
     }
 
-    private <T> Object getFieldValue(T entity, java.lang.reflect.Field field) {
+    private <T> Object getFieldValue(T entity, Field field) {
         try {
+            field.setAccessible(true);
+//            if(classMap.size() == 4)
+//            {
+//                refreshTable(field.getType(), classMap.get(field.getType()));
+//            }
+//            Class entClazz;
+//            if(Set.class.isAssignableFrom(field.getType()))
+//            {
+//                entClazz = getElementType(field);
+//                loadData(entClazz);
+//            }else if(isEntity(field.getType()))
+//            {
+//                entClazz = field.getType();
+//                loadData(entClazz);
+//            }
+
             return field.get(entity);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
@@ -171,7 +232,7 @@ public class MainScene{
         }
     }
 
-    private <T> ObservableList<T> loadData(Class<T> clazz) {
+    private static <T> ObservableList<T> loadData(Class<T> clazz) {
         List<T> entityList = null;
         try {
             session.beginTransaction();
@@ -184,13 +245,33 @@ public class MainScene{
         return FXCollections.observableArrayList(entityList);
     }
 
-    private <T> void showInputForm(Class<T> clazz, TableView<T> tableView)
-    {
-        Stage formStage = new Stage();
-        formStage.setTitle("Create" + clazz.getSimpleName());
+    private static <T> StringBuilder getStringBuilder(Class<T> clazz) {
+        StringBuilder queryBuilder = new StringBuilder("FROM " + clazz.getSimpleName());
 
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(20));
+        // Получаем все поля класса
+        Field[] fields = clazz.getDeclaredFields();
+
+        // Обрабатываем поля для поиска связей
+        for (Field field : fields) {
+            // Проверяем, является ли поле связью с другой сущностью
+            if (field.isAnnotationPresent(ManyToOne.class) ||
+                    field.isAnnotationPresent(OneToMany.class) ||
+                    field.isAnnotationPresent(ManyToMany.class)) {
+
+                // Добавляем LEFT JOIN FETCH для этой связи
+                queryBuilder.append("LEFT JOIN FETCH ").append(field.getName());
+            }
+        }
+        return queryBuilder;
+    }
+
+    private <T> void showInputForm(Class<T> clazz)
+    {
+        System.out.println(clazz);
+        TableView tableView = classMap.get(clazz);
+        formStage = new Stage();
+        formStage.setTitle("Create " + clazz.getSimpleName());
+
 
         VBox inputFields = new VBox(10);
 
@@ -203,6 +284,50 @@ public class MainScene{
 
             Label label = new Label(field.getName());
             Control inputControl = createInputControl(field);
+            if(inputControl instanceof ListView<?>)
+            {
+                Class entClazz;
+                if(Set.class.isAssignableFrom(field.getType()))
+                {
+                    entClazz = getElementType(field);
+                }else if(isEntity(field.getType()))
+                {
+                    entClazz = field.getType();
+                } else {
+                    entClazz = null;
+                }
+                MenuItem addButton = new MenuItem("Добавить");
+                MenuItem editButton = new MenuItem("Изменить");
+
+                ContextMenu contextMenu = new ContextMenu(addButton,editButton);
+                addButton.setOnAction(event -> {
+                    formStage.close();
+                    showInputForm(entClazz);
+                    formStage.setOnCloseRequest(e -> {
+                        isBlocked = false;
+                        showInputForm(clazz);
+                    });
+                });
+
+                editButton.setOnAction(event -> {
+                    ObservableList<T> selectedItems = ((ListView) inputControl).getSelectionModel().getSelectedItems();
+                    T entityToEdit;
+                    if (selectedItems.size() == 1) {
+                        entityToEdit = selectedItems.getFirst();
+                    } else {
+                        WindowTools.showAlert("Уведомление", "Выберите только одну сущность", Alert.AlertType.INFORMATION);
+                        return;
+                    }
+                    formStage.close();
+                    showEditForm(entClazz, entityToEdit);
+                    formStage.setOnCloseRequest(e -> {
+                        isBlocked = false;
+                        showInputForm(clazz);
+                    });
+                });
+
+                inputControl.setContextMenu(contextMenu);
+            }
             inputFields.getChildren().addAll(label, inputControl);
         }
 
@@ -211,15 +336,27 @@ public class MainScene{
             T entity = createEntityFromInputs(clazz, inputFields);
             if (entity != null) {
                 saveRecord(entity);
-                tableView.setItems(loadData(clazz));
+                refreshTable(clazz,tableView);
                 formStage.close();
+//                formStage.getOnCloseRequest().handle(new WindowEvent(formStage, Event.ANY));
                 isBlocked = false;
             }
         });
 
-        vbox.getChildren().addAll(inputFields, saveButton);
+        HBox buttons = new HBox(saveButton);
+        buttons.setAlignment(Pos.CENTER);
+        VBox content = new VBox(inputFields, buttons);
+        content.setPadding(new Insets(20));
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
 
-        Scene scene = new Scene(vbox, 400, 400);
+        Scene scene = new Scene(scrollPane, 400, 400);
+        formStage.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                // Действия при возвращении на сцену
+                System.out.println("Scene returned to focus.");
+            }
+        });
         formStage.setScene(scene);
         formStage.show();
         isBlocked = true;
@@ -227,15 +364,15 @@ public class MainScene{
     }
 
 
-    private <T> void showEditForm(Class<T> clazz, T entityToEdit, TableView<T> tableView) {
 
-        Stage formStage = new Stage();
+    private <T> void showEditForm(Class<T> clazz, T entityToEdit) {
+
+        TableView<T> tableView = classMap.get(clazz);
+        formStage = new Stage();
         formStage.setTitle("Edit " + clazz.getSimpleName());
 
-
-
-        VBox vbox = new VBox(10);  // VBox для размещения всех полей
-        vbox.setPadding(new Insets(20));
+        int entityId;
+        int index = tableView.getItems().indexOf(entityToEdit);
 
         // Список для хранения компонентов ввода
         VBox inputFields = new VBox(10);
@@ -247,6 +384,10 @@ public class MainScene{
         for (Field field : fields) {
             field.setAccessible(true);
             if (field.getName().equals("id")) {
+                try {
+                    entityId = (int) field.get(entityToEdit);
+                } catch (IllegalAccessException _) {
+                }
                 continue;
             }
 
@@ -254,8 +395,55 @@ public class MainScene{
 
             // Создаем элементы ввода на основе типа поля
             Control inputControl = createInputControl(field);
+            if(inputControl instanceof ListView<?>)
+            {
+                Class entClazz;
+                if(Set.class.isAssignableFrom(field.getType()))
+                {
+                    entClazz = getElementType(field);
+                }else if(isEntity(field.getType()))
+                {
+                    entClazz = field.getType();
+                } else {
+                    entClazz = null;
+                }
+                MenuItem addButton = new MenuItem("Добавить");
+                MenuItem editButton = new MenuItem("Изменить");
 
+                ContextMenu contextMenu = new ContextMenu(addButton,editButton);
+                addButton.setOnAction(event -> {
+                    formStage.close();
+                    showInputForm(entClazz);
+                    formStage.setOnCloseRequest(e -> {
+                        isBlocked = false;
+                        showEditForm(clazz, entityToEdit);
+                    });
+                });
+
+                editButton.setOnAction(event -> {
+                    ObservableList<T> selectedItems = ((ListView) inputControl).getSelectionModel().getSelectedItems();
+                    T entityToEd;
+                    if (selectedItems.size() == 1) {
+                        entityToEd = selectedItems.getFirst();
+                    } else {
+                        WindowTools.showAlert("Уведомление", "Выберите только одну сущность", Alert.AlertType.INFORMATION);
+                        return;
+                    }
+                    formStage.close();
+                    showEditForm(entClazz, entityToEd);
+                    formStage.setOnCloseRequest(e -> {
+                        isBlocked = false;
+//                        session.beginTransaction();
+//                        session.update(entityToEdit);
+//                        session.getTransaction().commit();
+                        showEditForm(clazz, entityToEdit);
+                    });
+                });
+
+                inputControl.setContextMenu(contextMenu);
+            }
             // Если сущность редактируется, заполняем поля значениями из entityToEdit
+//            refreshList();
             if (entityToEdit != null) {
                 fillFieldWithExistingData(field, entityToEdit, inputControl);
             }
@@ -265,18 +453,25 @@ public class MainScene{
 
         Button saveButton = new Button("Save Changes");
         saveButton.setOnAction(event -> {
-            T entity = createEntityFromInputs(clazz, inputFields);
+
+            T entity = updateEntityFromInputs(entityToEdit, inputFields);
             if (entity != null) {
                 updateRecord(entity);
-                tableView.setItems(loadData(clazz));
+                refreshTable(clazz,tableView);
                 formStage.close();
+//                formStage.getOnCloseRequest().handle(new WindowEvent(formStage, Event.ANY));
                 isBlocked = false;
             }
         });
 
-        vbox.getChildren().addAll(inputFields, saveButton);
+        HBox buttons = new HBox(saveButton);
+        buttons.setAlignment(Pos.CENTER);
+        VBox content = new VBox(inputFields, buttons);
+        content.setPadding(new Insets(20));
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
 
-        Scene scene = new Scene(vbox, 400, 400);
+        Scene scene = new Scene(scrollPane, 400, 400);
         formStage.setScene(scene);
         formStage.show();
         isBlocked = true;
@@ -291,20 +486,69 @@ public class MainScene{
                 ((TextField) inputControl).setText((String) value);
             } else if (field.getType() == int.class || field.getType() == Integer.class) {
                 ((TextField) inputControl).setText(String.valueOf(value));
-            }else if (field.getType().isAssignableFrom(Set.class)) {
+            }
+            else if (field.getType().isAssignableFrom(Set.class)) {
                 if (inputControl instanceof ListView) {
                     ListView<Object> listView = (ListView<Object>) inputControl;
-                    listView.getItems().setAll((Set<?>) value); // Заполняем ListView элементами из Set
+                    listView.getItems().stream().filter(n-> ((Set)value).stream().anyMatch(n::equals)).forEach(l -> listView.getSelectionModel().select(l));
                 }
-            }else if(isEntity(field.getType()))
+            }
+            else if(isEntity(field.getType()))
             {
-                ((ComboBox<Object>) inputControl).setValue(value);
+                if (inputControl instanceof ListView) {
+//                    refreshList(field.getType(),listView);
+                    int index = 0;
+                    for(Object obj : ((ListView<Object>) inputControl).getItems())
+                    {
+                        if(obj == value)
+                        {
+                            ((ListView<Object>) inputControl).getSelectionModel().select(index);
+                        }
+                        index++;
+                    }
+                }
             }
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
     }
 
+
+    private static <T> T updateEntityFromInputs(T entityToEdit, VBox inputFields) {
+        try {
+            Field[] fields = entityToEdit.getClass().getDeclaredFields();
+
+            int index = 0;
+            for (Field field : fields) {
+                field.setAccessible(true);
+                if (field.getName().equals("id")) {
+                    continue;
+                }
+                Control inputControl = (Control) inputFields.getChildren().get(index * 2 + 1);
+
+                if (Set.class.isAssignableFrom(field.getType())) {
+                    ListView<?> listView = (ListView<?>) inputControl;
+                    ObservableList selectedItems = listView.getSelectionModel().getSelectedItems();
+                    field.set(entityToEdit,new HashSet<>(selectedItems));
+                } else if (field.getType() == String.class) {
+                    field.set(entityToEdit, ((TextField) inputControl).getText());
+                } else if (field.getType() == int.class || field.getType() == Integer.class) {
+                    field.set(entityToEdit, Integer.parseInt(((TextField) inputControl).getText()));
+                }else if(isEntity(field.getType()))
+                {
+                    ListView<?> listView = (ListView<?>) inputControl;
+                    Object selectedItem = listView.getSelectionModel().getSelectedItem();
+                    field.set(entityToEdit,selectedItem);
+                }
+                index++;
+            }
+
+            return entityToEdit;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     private static <T> T createEntityFromInputs(Class<T> clazz, VBox inputFields) {
         try {
@@ -327,9 +571,11 @@ public class MainScene{
                     field.set(entity, ((TextField) inputControl).getText());
                 } else if (field.getType() == int.class || field.getType() == Integer.class) {
                     field.set(entity, Integer.parseInt(((TextField) inputControl).getText()));
-                }else if(isEntity(field.getType()) && inputControl instanceof ComboBox)
+                }else if(isEntity(field.getType()))
                 {
-                    field.set(entity, ((ComboBox<Object>) inputControl).getValue());
+                    ListView<?> listView = (ListView<?>) inputControl;
+                    Object selectedItems = listView.getSelectionModel().getSelectedItem();
+                    field.set(entity,selectedItems);
                 }
                 index++;
             }
@@ -342,41 +588,56 @@ public class MainScene{
     }
 
     private Control createInputControl(Field field) {
-        // В зависимости от типа поля, создаем соответствующий элемент UI
         if (Set.class.isAssignableFrom(field.getType())) {
-            return createListViewForSet(field);  // Для Set или других коллекций используем ComboBox
+            return createListViewForSet(field);
         }
         else if (field.getType() == String.class) {
             return new TextField();
         } else if (field.getType() == int.class || field.getType() == Integer.class) {
-            return new TextField();  // Можно заменить на Spinner для чисел
+            return new TextField();
         }else if (isEntity(field.getType()))
         {
-            ComboBox<Object> comboBox = new ComboBox<>();
-            // Загрузить данные из базы
-            comboBox.getItems().addAll(loadData(field.getType()));
-            return comboBox;
+            return createListViewForEntity(field);
         }
         else {
-            return new TextField();  // По умолчанию используем TextField
+            return new TextField();
         }
     }
 
-    private ListView<?> createListViewForSet(Field field) {
-        // Получаем тип элемента коллекции (например, Theme из Set<Theme>)
-        Class<?> elementType = getElementType(field);
 
+    private <T> ListView<?> createListViewForEntity(Field field) {
+        Class elementType = field.getType();
+
+        ListView listView = new ListView<>();
+//        TableView tableView = classMap.get(elementType);
+
+        List items = loadData(elementType);
+
+        listView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        if(items != null)
+        {
+            listView.getItems().addAll(items);
+        }
+
+        return listView;
+    }
+
+
+    private <T> ListView<?> createListViewForSet(Field field) {
+        // Получаем тип элемента коллекции (например, Theme из Set<Theme>)
+        Class elementType = getElementType(field);
         // Создаем ListView для связанной сущности (например, Theme или другая сущность)
-        ListView<Object> listView = new ListView<>();
+        ListView listView = new ListView<>();
 
         // Загружаем все объекты сущности из базы данных в зависимости от типа
-        List<?> items = loadData(elementType);
+        List items = loadData(elementType);
 
         // Устанавливаем ListView для множественного выбора
         listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         // Добавляем все элементы в ListView
         listView.getItems().addAll(items);
+
 
         return listView;
     }
@@ -396,7 +657,7 @@ public class MainScene{
         return comboBox;
     }
 
-    private Class<?> getElementType(Field field) {
+    private static Class<?> getElementType(Field field) {
         Type fieldType = field.getGenericType();
 
         if (fieldType instanceof ParameterizedType paramType) {
@@ -427,32 +688,9 @@ public class MainScene{
             // Удаляем их из таблицы
 //            tableView.getItems().removeAll(selectedItems);
         }
-        tableView.setItems(loadData(clazz));
+        refreshTable(clazz,tableView);
     }
 
-//    // Метод для редактирования записей
-//    private <T> void editRecord(Class<T> clazz, TableView<T> tableView) {
-//        // Получаем все выбранные элементы
-//        ObservableList<T> selectedItems = tableView.getSelectionModel().getSelectedItems();
-//
-//        if (!selectedItems.isEmpty()) {
-//            // Пример изменения для каждой выбранной записи
-//            for (T selectedItem : selectedItems) {
-////                if (clazz == Competition.class) {
-////                    Person person = (Person) selectedItem;
-////                    person.setName("Edited Person");
-////                }
-//            }
-//
-//            // Обновляем все измененные записи в базе данных
-//            for (T selectedItem : selectedItems) {
-//                updateRecord(selectedItem);
-//            }
-//
-//            // Обновляем таблицу
-//            tableView.refresh();
-//        }
-//    }
 
     // Сохранение записи в базе данных
     private <T> void saveRecord(T record) {
@@ -463,22 +701,12 @@ public class MainScene{
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
     }
 
-    // Удаление записи из базы данных
     private <T> void deleteRecordFromDB(T record) {
-        
-        SessionStatistics stats = session.getStatistics();
-
-        // Включаем сбор статистики
         try {
             session.beginTransaction();
-//            session.lock(record, LockMode.PESSIMISTIC_WRITE);
-//            System.out.println(record);
-//            Object obj = session.get(record.getClass(), Integer.parseInt(record.toString()));
-//            session.flush();
-//            session.clear();
             session.remove(record);
             session.getTransaction().commit();
         } catch (OptimisticLockException e) {
@@ -489,20 +717,18 @@ public class MainScene{
             session.getTransaction().rollback();
             e.printStackTrace();
         }
-        
+
     }
 
-    // Обновление записи в базе данных
     private <T> void updateRecord(T record) {
-        
         try {
             session.beginTransaction();
-            session.update(record);
+            session.merge(record);
             session.getTransaction().commit();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
     }
 
 }

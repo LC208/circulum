@@ -19,7 +19,16 @@ import java.util.Set;
 public class Competition  implements java.io.Serializable {
 
 
-     private int id;
+    public boolean equals(Object obj) {
+        if(obj instanceof Competition)
+        {
+            return this.id == ((Competition)obj).id;
+        }
+        return false;
+    }
+
+
+    private int id;
      private String description;
      private String name;
      private Set<StudyProgram> studyPrograms = new HashSet<>(0);

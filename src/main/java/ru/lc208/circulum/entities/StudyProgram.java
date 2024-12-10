@@ -15,7 +15,13 @@ import java.util.Set;
     ,schema="public"
 )
 public class StudyProgram  implements java.io.Serializable {
-
+    public boolean equals(Object obj) {
+        if(obj instanceof StudyProgram)
+        {
+            return this.id == ((StudyProgram)obj).id;
+        }
+        return false;
+    }
 
      private int id;
      private Subject subject;
@@ -116,10 +122,10 @@ public class StudyProgram  implements java.io.Serializable {
         this.gears = gears;
     }
 
-@ManyToMany(fetch=FetchType.LAZY, mappedBy = "studyPrograms")
-//    @JoinTable(name="program_competition", schema="public", joinColumns = {
-//        @JoinColumn(name="program_id", nullable=false, updatable=false) }, inverseJoinColumns = {
-//        @JoinColumn(name="competition_id", nullable=false, updatable=false) })
+@ManyToMany(fetch=FetchType.LAZY)
+    @JoinTable(name="program_competition", schema="public", joinColumns = {
+        @JoinColumn(name="program_id", nullable=false, updatable=false) }, inverseJoinColumns = {
+        @JoinColumn(name="competition_id", nullable=false, updatable=false) })
     public Set<Competition> getCompetitions() {
         return this.competitions;
     }

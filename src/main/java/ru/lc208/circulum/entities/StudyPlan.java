@@ -16,7 +16,13 @@ import java.util.Set;
 )
 public class StudyPlan  implements java.io.Serializable {
 
-
+    public boolean equals(Object obj) {
+        if(obj instanceof StudyPlan)
+        {
+            return this.id == ((StudyPlan)obj).id;
+        }
+        return false;
+    }
      private int id;
      private Subject subject;
      private Speciality speciality;
@@ -100,9 +106,10 @@ public class StudyPlan  implements java.io.Serializable {
         this.workTypes = workTypes;
     }
 
-
-
-
+    @Override
+    public String toString() {
+        return subject + " " + speciality;
+    }
 }
 
 

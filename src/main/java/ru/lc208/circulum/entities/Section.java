@@ -13,7 +13,13 @@ import jakarta.persistence.*;
 )
 public class Section  implements java.io.Serializable {
 
-
+    public boolean equals(Object obj) {
+        if(obj instanceof Section)
+        {
+            return this.id == ((Section)obj).id;
+        }
+        return false;
+    }
      private int id;
      private Theme theme;
      private String name;

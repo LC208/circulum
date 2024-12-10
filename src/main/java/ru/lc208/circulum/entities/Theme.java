@@ -16,7 +16,13 @@ import java.util.Set;
 )
 public class Theme  implements java.io.Serializable {
 
-
+    public boolean equals(Object obj) {
+        if(obj instanceof Theme)
+        {
+            return this.id == ((Theme)obj).id;
+        }
+        return false;
+    }
      private int id;
      private String name;
      private Set<Section> sections = new HashSet<>(0);

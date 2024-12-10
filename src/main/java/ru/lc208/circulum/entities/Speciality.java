@@ -16,7 +16,13 @@ import java.util.Set;
 )
 public class Speciality  implements java.io.Serializable {
 
-
+    public boolean equals(Object obj) {
+        if(obj instanceof Speciality)
+        {
+            return this.id == ((Speciality)obj).id;
+        }
+        return false;
+    }
      private int id;
      private Faculty faculty;
      private Direction direction;
