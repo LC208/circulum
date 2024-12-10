@@ -53,7 +53,7 @@ public class ConnectionController {
                     .setProperty("hibernate.connection.password", password)
                     .buildSessionFactory();
 
-            showAlert("Success", "Connection successful!", Alert.AlertType.INFORMATION);
+            showAlert("Успех", "Подключение установлено", Alert.AlertType.INFORMATION);
             Stage currentStage = (Stage) usernameField.getScene().getWindow();
             MainScene main = new MainScene();
             main.show(currentStage);

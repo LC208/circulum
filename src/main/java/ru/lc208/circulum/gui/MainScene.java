@@ -4,29 +4,36 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.skin.TableColumnHeader;
+import javafx.scene.control.skin.TableViewSkin;
+import javafx.scene.control.skin.TableViewSkinBase;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import ru.lc208.circulum.controllers.ConnectionController;
 import ru.lc208.circulum.entities.*;
 import ru.lc208.circulum.util.TranslationHelper;
 import ru.lc208.circulum.util.WindowTools;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ru.lc208.circulum.util.WindowTools.showAlert;
+
 public class MainScene{
 
-    private final Class<?>[] entityClasses = {Competition.class, Department.class, Direction.class, Faculty.class, Gear.class, Section.class, Speciality.class, StudyPlan.class, StudyProgram.class, Subject.class, Teacher.class, Theme.class, WorkType.class};
+    private static Class<?>[] entityClasses = {Competition.class, Department.class, Direction.class, Faculty.class, Gear.class, Section.class, Speciality.class, StudyProgram.class, Subject.class, Teacher.class, Theme.class,StudyPlan.class, WorkType.class};
 
     private static Session session = null;
     private Stage formStage;
@@ -34,14 +41,47 @@ public class MainScene{
     private TabPane tabPane;
     private Map<Tab, Class> tabMap = new HashMap<>();
     private Map<Class, TableView> classMap = new HashMap<>();
+    private boolean studyPlan = false;
 
 
     public MainScene()
     {
         session = ConnectionController.getSessionFactory().openSession();
+        if(checkCurrentUser().contains("study_plan"))
+        {
+            entityClasses = new Class[]{StudyPlan.class, WorkType.class};
+            studyPlan = true;
+        }
     }
 
     private boolean isBlocked = false;
+
+
+    private static List<String> checkCurrentUser()
+    {
+        Transaction transaction = session.beginTransaction();
+
+        try {
+            // SQL-запрос для получения родительской роли текущей роли
+            List<String> parentRoles = session.createNativeQuery(
+                    "SELECT r.rolname AS parent_role " +
+                            "FROM pg_auth_members m " +
+                            "JOIN pg_roles r ON m.roleid = r.oid " +
+                            "WHERE m.member = (SELECT oid FROM pg_roles WHERE rolname = current_user)"
+            ).getResultList();
+
+            // Выводим родительские роли
+
+
+
+            transaction.commit();
+            return parentRoles;
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            showAlert("Внимание", "Ошибка при проверке роли", Alert.AlertType.INFORMATION);
+        }
+        return null;
+    }
 
     public void show(Stage currentStage)
     {
@@ -59,7 +99,7 @@ public class MainScene{
             tabPane.getTabs().add(tab);
             TranslationHelper.applyTranslations(tabContent);
         }
-        refreshTable(entityClasses[0], classMap.get(entityClasses[0]));
+//        refreshTable(entityClasses[0], classMap.get(entityClasses[0]));
         tabPane.getSelectionModel().selectedItemProperty().addListener(
                 (_, _, t1) -> refreshTable(tabMap.get(t1), classMap.get(tabMap.get(t1)))
         );
@@ -69,9 +109,42 @@ public class MainScene{
         currentStage.setScene(scene);
         currentStage.setTitle("Main");
         currentStage.show();
+        currentStage.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                refreshTable(tabMap.get(tabPane.getSelectionModel().getSelectedItem()), classMap.get(tabMap.get(tabPane.getSelectionModel().getSelectedItem())));
+            }
+        });
     }
 
 
+    private double getTextWidth(String text) {
+        javafx.scene.text.Text tempText = new javafx.scene.text.Text(text);
+        return tempText.getLayoutBounds().getWidth();
+    }
+
+    private <T>void resizeColumnsToFitContent(TableView<T> tableView) {
+        for (TableColumn<T, ?> column : tableView.getColumns()) {
+            column.setPrefWidth(0);
+            for (T person : tableView.getItems()) {
+                // Получаем значение для ячейки в столбце
+                Object cellValue = column.getCellData(person);
+                double width = getCellTextWidth(cellValue != null ? cellValue.toString() : "");
+                if (width > column.getWidth()) {
+                    column.setPrefWidth(width + 10); // +10 для добавления отступа
+                }
+            }
+
+            double headerWidth = getTextWidth(column.getText());
+            if (headerWidth > column.getPrefWidth()) {
+                column.setMinWidth(headerWidth + 15);  // +10 для отступа
+            }
+        }
+    }
+
+    private double getCellTextWidth(String text) {
+        javafx.scene.text.Text tempText = new javafx.scene.text.Text(text);
+        return tempText.getLayoutBounds().getWidth();
+    }
 
     private <T> VBox createTabContent(Class<T> clazz) {
         TableView<T> tableView = createTableView(clazz);
@@ -127,6 +200,7 @@ public class MainScene{
         ObservableList<T> data = loadData(clazz);
         tableView.getItems().clear();
         tableView.setItems(data);
+        resizeColumnsToFitContent(tableView);
     }
 
     private static <T> void refreshList(Class<T> clazz, ListView<T> listView)
@@ -145,7 +219,7 @@ public class MainScene{
 
     private <T> TableView<T> createTableView(Class<T> clazz) {
         TableView<T> tableView = new TableView<>();
-
+//        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_SUBSEQUENT_COLUMNS);
         for (var field : clazz.getDeclaredFields()) {
             field.setAccessible(true);
 
@@ -227,7 +301,7 @@ public class MainScene{
 
             return field.get(entity);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            showAlert("Внимание", "Ошибка при получении значений таблицы", Alert.AlertType.INFORMATION);
             return null;
         }
     }
@@ -239,7 +313,7 @@ public class MainScene{
             entityList = session.createQuery("from " + clazz.getName(), clazz).getResultList();
             session.getTransaction().commit();
         } catch (Exception e) {
-            e.printStackTrace();
+            showAlert("Внимание", "Ошибка при загрузке данных", Alert.AlertType.INFORMATION);
         }
         assert entityList != null;
         return FXCollections.observableArrayList(entityList);
@@ -267,7 +341,6 @@ public class MainScene{
 
     private <T> void showInputForm(Class<T> clazz)
     {
-        System.out.println(clazz);
         TableView tableView = classMap.get(clazz);
         formStage = new Stage();
         formStage.setTitle("Create " + clazz.getSimpleName());
@@ -326,7 +399,9 @@ public class MainScene{
                     });
                 });
 
-                inputControl.setContextMenu(contextMenu);
+                if(!studyPlan){
+                    inputControl.setContextMenu(contextMenu);
+                }
             }
             inputFields.getChildren().addAll(label, inputControl);
         }
@@ -351,12 +426,12 @@ public class MainScene{
         scrollPane.setFitToWidth(true);
 
         Scene scene = new Scene(scrollPane, 400, 400);
-        formStage.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                // Действия при возвращении на сцену
-                System.out.println("Scene returned to focus.");
-            }
-        });
+//        formStage.focusedProperty().addListener((observable, oldValue, newValue) -> {
+//            if (newValue) {
+//                // Действия при возвращении на сцену
+//                System.out.println("Scene returned to focus.");
+//            }
+//        });
         formStage.setScene(scene);
         formStage.show();
         isBlocked = true;
@@ -366,7 +441,6 @@ public class MainScene{
 
 
     private <T> void showEditForm(Class<T> clazz, T entityToEdit) {
-
         TableView<T> tableView = classMap.get(clazz);
         formStage = new Stage();
         formStage.setTitle("Edit " + clazz.getSimpleName());
@@ -440,7 +514,9 @@ public class MainScene{
                     });
                 });
 
-                inputControl.setContextMenu(contextMenu);
+                if(!studyPlan){
+                    inputControl.setContextMenu(contextMenu);
+                }
             }
             // Если сущность редактируется, заполняем поля значениями из entityToEdit
 //            refreshList();
@@ -509,7 +585,7 @@ public class MainScene{
                 }
             }
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            showAlert("Внимание", "Проблема при заполнении полей", Alert.AlertType.INFORMATION);
         }
     }
 
@@ -544,8 +620,12 @@ public class MainScene{
             }
 
             return entityToEdit;
-        } catch (Exception e) {
-            e.printStackTrace();
+        }catch (NumberFormatException e) {
+            showAlert("Внимание", "В поле нужно ввести числовое значение", Alert.AlertType.INFORMATION);
+            return null;
+        }
+        catch (Exception e) {
+            showAlert("Внимание", "Ошибка перед обновлением записи", Alert.AlertType.INFORMATION);
             return null;
         }
     }
@@ -582,7 +662,7 @@ public class MainScene{
 
             return entity;
         } catch (Exception e) {
-            e.printStackTrace();
+            showAlert("Внимание", "Ошибка перед созданием записи", Alert.AlertType.INFORMATION);
             return null;
         }
     }
@@ -699,7 +779,7 @@ public class MainScene{
             session.save(record);
             session.getTransaction().commit();
         } catch (Exception e) {
-            e.printStackTrace();
+            showAlert("Внимание", "Не удалось сохранить запись", Alert.AlertType.INFORMATION);
         }
 
     }
@@ -709,13 +789,9 @@ public class MainScene{
             session.beginTransaction();
             session.remove(record);
             session.getTransaction().commit();
-        } catch (OptimisticLockException e) {
-            System.err.println("Optimistic lock exception: " + e.getMessage());
-            e.printStackTrace();
-            session.getTransaction().rollback();
         } catch (Exception e) {
             session.getTransaction().rollback();
-            e.printStackTrace();
+            showAlert("Внимание", "Не удалось удалить запись", Alert.AlertType.INFORMATION);
         }
 
     }
@@ -726,7 +802,7 @@ public class MainScene{
             session.merge(record);
             session.getTransaction().commit();
         } catch (Exception e) {
-            e.printStackTrace();
+            showAlert("Внимание", "Не удалось обновить запись", Alert.AlertType.INFORMATION);
         }
 
     }

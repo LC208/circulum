@@ -25,6 +25,37 @@ public class Translation {
         translations.put("Teacher", "Преподаватель");
         translations.put("Theme", "Тема");
         translations.put("WorkType", "Тип работы");
+        translations.put("id", "Идентификатор");
+        translations.put("studyPrograms", "Учебные программы");
+        translations.put("faculty", "Факультет");
+        translations.put("depName", "Имя отдела");
+        translations.put("deanId", "Идентификатор декана");
+        translations.put("teachers", "Учителя");
+        translations.put("studyPlans", "Учебные планы");
+        translations.put("dirName", "Имя направления");
+        translations.put("specialities", "Специальности");
+        translations.put("departments", "Отделы");
+        translations.put("type", "Тип");
+        translations.put("theme", "Тема");
+        translations.put("content", "Содержание");
+        translations.put("direction", "Направление");
+        translations.put("specName", "Имя специальности");
+        translations.put("subject", "Предмет");
+        translations.put("speciality", "Специальность");
+        translations.put("tasksTargets", "Цели и задачи");
+        translations.put("requirments", "Требования");
+        translations.put("discPlace", "Место дисциплины");
+        translations.put("gears", "Оборудование");
+        translations.put("competitions", "Компетенции");
+        translations.put("themes", "Темы");
+        translations.put("teacher", "Преподаватель");
+        translations.put("subName", "Имя предмета");
+        translations.put("department", "Отдел");
+        translations.put("subjects", "Предметы");
+        translations.put("sections", "Разделы");
+        translations.put("hours", "Часы");
+        translations.put("workTypes", "Типы работы");
+        translations.put("workType", "Тип работы");
     }
 
     public static String translate(String key) {
