@@ -67,7 +67,10 @@ public class Teacher  implements java.io.Serializable {
         this.subjects = subjects;
     }
 
-
+    @Override
+    public String toString() {
+        return String.valueOf(id) + " - " + department;
+    }
 }
 
 

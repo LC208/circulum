@@ -4,21 +4,15 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.skin.TableColumnHeader;
-import javafx.scene.control.skin.TableViewSkin;
-import javafx.scene.control.skin.TableViewSkinBase;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 import org.apache.poi.xwpf.usermodel.*;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -162,7 +156,10 @@ public class MainScene{
 
         Button save = new Button("Сохранить");
         save.setOnAction(e ->{saveToFile(classMap.get(tabMap.get(tabPane.getSelectionModel().getSelectedItem())),currentStage, tabPane.getSelectionModel().getSelectedItem().getText());});
-        VBox main = new VBox(10, tabPane, save);
+
+        HBox buttons = new HBox(save);
+        buttons.setAlignment(Pos.CENTER);
+        VBox main = new VBox(10, tabPane, buttons);
         TranslationHelper.applyTranslations(main);
         Scene scene = new Scene(main, 800, 600);
         currentStage.setScene(scene);
