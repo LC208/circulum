@@ -151,7 +151,7 @@ public class MainScene{
         }
 //        refreshTable(entityClasses[0], classMap.get(entityClasses[0]));
         tabPane.getSelectionModel().selectedItemProperty().addListener(
-                (_, _, t1) -> refreshTable(tabMap.get(t1), classMap.get(tabMap.get(t1)))
+                (ignore, ignored, t1) -> refreshTable(tabMap.get(t1), classMap.get(tabMap.get(t1)))
         );
 
         Button save = new Button("Сохранить");
@@ -519,7 +519,7 @@ public class MainScene{
             if (field.getName().equals("id")) {
                 try {
                     entityId = (int) field.get(entityToEdit);
-                } catch (IllegalAccessException _) {
+                } catch (IllegalAccessException ignore) {
                 }
                 continue;
             }
