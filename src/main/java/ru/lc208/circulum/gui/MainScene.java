@@ -356,6 +356,7 @@ public class MainScene{
             }
 
             Label label = new Label(field.getName());
+            label.setId(field.getName());
             Control inputControl = createInputControl(field);
             if(inputControl instanceof ListView<?>)
             {
@@ -404,9 +405,10 @@ public class MainScene{
                 }
             }
             inputFields.getChildren().addAll(label, inputControl);
+            TranslationHelper.applyTranslations(inputFields);
         }
 
-        Button saveButton = new Button("Save");
+        Button saveButton = new Button("Сохранить");
         saveButton.setOnAction(event -> {
             T entity = createEntityFromInputs(clazz, inputFields);
             if (entity != null) {
@@ -466,7 +468,7 @@ public class MainScene{
             }
 
             Label label = new Label(field.getName());
-
+            label.setId(field.getName());
             // Создаем элементы ввода на основе типа поля
             Control inputControl = createInputControl(field);
             if(inputControl instanceof ListView<?>)
@@ -525,9 +527,10 @@ public class MainScene{
             }
 
             inputFields.getChildren().addAll(label, inputControl);
+            TranslationHelper.applyTranslations(inputFields);
         }
 
-        Button saveButton = new Button("Save Changes");
+        Button saveButton = new Button("Сохранить изменения");
         saveButton.setOnAction(event -> {
 
             T entity = updateEntityFromInputs(entityToEdit, inputFields);
