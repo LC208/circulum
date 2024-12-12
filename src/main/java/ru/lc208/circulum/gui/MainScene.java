@@ -19,9 +19,7 @@ import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFTable;
-import org.apache.poi.xwpf.usermodel.XWPFTableRow;
+import org.apache.poi.xwpf.usermodel.*;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import ru.lc208.circulum.controllers.ConnectionController;
@@ -89,45 +87,57 @@ public class MainScene{
         }
         return null;
     }
-    
-    private <T> void saveToFile(TableView<T> tableView, Stage primaryStage)
-    {
+
+    private <T> void saveToFile(TableView<T> tableView, Stage primaryStage, String title) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Word", "*.docx"));
         File file = fileChooser.showSaveDialog(primaryStage);
-        if(file != null)
-        {
-            try(XWPFDocument document = new XWPFDocument())
-            {
+        if (file != null) {
+            try (XWPFDocument document = new XWPFDocument()) {
+                XWPFParagraph titleParagraph = document.createParagraph();
+                XWPFRun titleRun = titleParagraph.createRun();
+                titleRun.setText(title);
+                titleRun.setBold(true);
+                titleRun.setFontSize(16);
+                titleParagraph.setSpacingAfter(200);
+
                 XWPFTable wordTable = document.createTable();
-                XWPFTableRow headerRow = wordTable.getRow(0);
-                for(TableColumn<T, ?> column : tableView.getColumns())
-                {
+
+                wordTable.removeRow(0);
+
+                XWPFTableRow headerRow = wordTable.createRow();
+                for (TableColumn<T, ?> column : tableView.getColumns()) {
                     headerRow.addNewTableCell().setText(column.getText());
                 }
 
-                for(T data : tableView.getItems())
-                {
+                for (T data : tableView.getItems()) {
                     XWPFTableRow row = wordTable.createRow();
-                    int index = 1;
-                    for(TableColumn<T, ?> column : tableView.getColumns())
-                    {
+                    int index = 0;
+                    for (TableColumn<T, ?> column : tableView.getColumns()) {
                         Object cellValue = column.getCellData(data);
-                        row.getCell(index++).setText(cellValue.toString());
+                        row.getCell(index++).setText(cellValue != null ? cellValue.toString() : "");
                     }
                 }
 
-                try(FileOutputStream out = new FileOutputStream(file)) {
+                XWPFParagraph dateParagraph = document.createParagraph();
+                XWPFRun dateRun = dateParagraph.createRun();
+                dateRun.setText("Дата: " + java.time.LocalDate.now());
+                dateRun.setItalic(true);
+                dateRun.setFontSize(12);
+                dateParagraph.setSpacingBefore(200);
+
+                try (FileOutputStream out = new FileOutputStream(file)) {
                     document.write(out);
                 }
 
-                System.out.println("Saved to" + file.getAbsolutePath());
-            }catch (IOException e)
-            {
+                System.out.println("Saved to " + file.getAbsolutePath());
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
+
+
 
     public void show(Stage currentStage)
     {
@@ -150,8 +160,8 @@ public class MainScene{
                 (_, _, t1) -> refreshTable(tabMap.get(t1), classMap.get(tabMap.get(t1)))
         );
 
-        Button save = new Button("save");
-        save.setOnAction(e ->{saveToFile(classMap.get(Competition.class),currentStage);});
+        Button save = new Button("Сохранить");
+        save.setOnAction(e ->{saveToFile(classMap.get(tabMap.get(tabPane.getSelectionModel().getSelectedItem())),currentStage, tabPane.getSelectionModel().getSelectedItem().getText());});
         VBox main = new VBox(10, tabPane, save);
         TranslationHelper.applyTranslations(main);
         Scene scene = new Scene(main, 800, 600);
@@ -362,6 +372,7 @@ public class MainScene{
             entityList = session.createQuery("from " + clazz.getName(), clazz).getResultList();
             session.getTransaction().commit();
         } catch (Exception e) {
+            session.getTransaction().rollback();
             showAlert("Внимание", "Ошибка при загрузке данных", Alert.AlertType.INFORMATION);
         }
         assert entityList != null;
@@ -714,6 +725,7 @@ public class MainScene{
 
             return entity;
         } catch (Exception e) {
+            e.printStackTrace();
             showAlert("Внимание", "Ошибка перед созданием записи", Alert.AlertType.INFORMATION);
             return null;
         }
@@ -831,6 +843,7 @@ public class MainScene{
             session.save(record);
             session.getTransaction().commit();
         } catch (Exception e) {
+            session.getTransaction().rollback();
             showAlert("Внимание", "Не удалось сохранить запись", Alert.AlertType.INFORMATION);
         }
 
@@ -854,6 +867,7 @@ public class MainScene{
             session.merge(record);
             session.getTransaction().commit();
         } catch (Exception e) {
+            session.getTransaction().rollback();
             showAlert("Внимание", "Не удалось обновить запись", Alert.AlertType.INFORMATION);
         }
 
