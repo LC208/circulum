@@ -16,8 +16,12 @@ import javafx.scene.control.skin.TableViewSkinBase;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFTable;
+import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import ru.lc208.circulum.controllers.ConnectionController;
@@ -25,6 +29,9 @@ import ru.lc208.circulum.entities.*;
 import ru.lc208.circulum.util.TranslationHelper;
 import ru.lc208.circulum.util.WindowTools;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -82,6 +89,45 @@ public class MainScene{
         }
         return null;
     }
+    
+    private <T> void saveToFile(TableView<T> tableView, Stage primaryStage)
+    {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Word", "*.docx"));
+        File file = fileChooser.showSaveDialog(primaryStage);
+        if(file != null)
+        {
+            try(XWPFDocument document = new XWPFDocument())
+            {
+                XWPFTable wordTable = document.createTable();
+                XWPFTableRow headerRow = wordTable.getRow(0);
+                for(TableColumn<T, ?> column : tableView.getColumns())
+                {
+                    headerRow.addNewTableCell().setText(column.getText());
+                }
+
+                for(T data : tableView.getItems())
+                {
+                    XWPFTableRow row = wordTable.createRow();
+                    int index = 1;
+                    for(TableColumn<T, ?> column : tableView.getColumns())
+                    {
+                        Object cellValue = column.getCellData(data);
+                        row.getCell(index++).setText(cellValue.toString());
+                    }
+                }
+
+                try(FileOutputStream out = new FileOutputStream(file)) {
+                    document.write(out);
+                }
+
+                System.out.println("Saved to" + file.getAbsolutePath());
+            }catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public void show(Stage currentStage)
     {
@@ -103,7 +149,10 @@ public class MainScene{
         tabPane.getSelectionModel().selectedItemProperty().addListener(
                 (_, _, t1) -> refreshTable(tabMap.get(t1), classMap.get(tabMap.get(t1)))
         );
-        VBox main = new VBox(10, tabPane);
+
+        Button save = new Button("save");
+        save.setOnAction(e ->{saveToFile(classMap.get(Competition.class),currentStage);});
+        VBox main = new VBox(10, tabPane, save);
         TranslationHelper.applyTranslations(main);
         Scene scene = new Scene(main, 800, 600);
         currentStage.setScene(scene);

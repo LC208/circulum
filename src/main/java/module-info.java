@@ -5,6 +5,7 @@ module ru.lc208.circulum {
     requires org.hibernate.orm.core;
     requires java.naming;
     requires javafx.base;
+    requires org.apache.poi.ooxml;
 
     opens ru.lc208.circulum to javafx.fxml;
     opens ru.lc208.circulum.controllers to javafx.fxml;
