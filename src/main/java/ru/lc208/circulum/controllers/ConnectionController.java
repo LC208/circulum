@@ -58,7 +58,7 @@ public class ConnectionController {
             MainScene main = new MainScene();
             main.show(currentStage);
         } catch (Exception e) {
-            showAlert("Something Went Wrong", "Error: " + e.getMessage(), Alert.AlertType.ERROR);
+            showAlert("Что-то пошло не так", "Ошибка: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
