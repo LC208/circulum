@@ -40,7 +40,7 @@ public class ConnectionController {
         String password = passwordField.getText();
 
         if (host.isEmpty() || port.isEmpty() || dbName.isEmpty() || username.isEmpty()) {
-            showAlert("Error", "All fields must be filled!", Alert.AlertType.ERROR);
+            showAlert("Ошибка", "Все поля должны быть заполнены", Alert.AlertType.ERROR);
             return;
         }
 

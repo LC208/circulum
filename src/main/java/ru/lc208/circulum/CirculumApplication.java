@@ -14,7 +14,7 @@ public class CirculumApplication extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("connection.fxml"));
         Parent p = loader.load();
         stage.setScene(new Scene(p));
-        stage.setTitle("Database Connection");
+        stage.setTitle("Вход");
         stage.show();
     }
 

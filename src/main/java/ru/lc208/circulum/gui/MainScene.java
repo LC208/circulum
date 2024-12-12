@@ -163,7 +163,7 @@ public class MainScene{
         TranslationHelper.applyTranslations(main);
         Scene scene = new Scene(main, 800, 600);
         currentStage.setScene(scene);
-        currentStage.setTitle("Main");
+        currentStage.setTitle("Главное окно");
         currentStage.show();
         currentStage.focusedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
